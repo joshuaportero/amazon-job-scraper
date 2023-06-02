@@ -71,7 +71,7 @@ If you want to run the pre-compiled JAR file instead of compiling the code yours
 
 1. **Download the latest release**
 
-   Go to the [Releases](https://github.com/joshuaportero/AmazonJobScraper/releases) page of this repository and download the latest JAR file.
+   Go to the [Releases](https://github.com/joshuaportero/amazon-job-scrapper/releases) page of this repository and download the latest JAR file.
 
 2. **Setup the environment variables**
 
