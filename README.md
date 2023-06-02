@@ -1,6 +1,6 @@
-# Amazon Warehouse Job Scraper (Java)
+# Amazon Warehouse Job Scraper
 
-This is a Java-based project designed to scrape Amazon warehouse job listings, primarily aimed at finding summer job opportunities. I built this tool to circumvent issues with Amazon's notification system which seemed to omit certain job openings. This utility provides an automated, reliable way to find and notify me of Amazon job vacancies.
+This is a Java-based project designed to scrape Amazon warehouse job listings, primarily aimed at finding summer job opportunities. I built this tool to circumvent issues with Amazon's notification system. This utility provides an automated, reliable way to find and notify me of Amazon job vacancies.
 
 ## Features
 
