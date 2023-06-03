@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "me.joshuaportero.ajs"
-version = "0.8.3-ALPHA"
+version = "1.0.0-BETA"
 
 project.java.sourceCompatibility = JavaVersion.VERSION_17
 project.java.targetCompatibility = JavaVersion.VERSION_17
