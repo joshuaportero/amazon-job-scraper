@@ -58,7 +58,7 @@ public class JobScraper {
             String[] jobTitles = jobScraper.getDotEnv().get("TITLE").split(",");
             List<String> jobTitleList = Arrays.asList(jobTitles);
             if (jobTitleList.stream().noneMatch("ANY"::equalsIgnoreCase)) {
-                jobsData.removeIf(jobData -> jobTitleList.stream().anyMatch(jobTitle -> jobData.getTitle().contains(jobTitle)));
+                jobsData.removeIf(jobData -> jobTitleList.stream().noneMatch(jobTitle -> jobData.getTitle().contains(jobTitle)));
             }
 
             // Filter jobs by type
@@ -67,7 +67,7 @@ public class JobScraper {
 
             if (jobTypeList.stream().noneMatch("ANY"::equalsIgnoreCase)) {
                 jobsData.removeIf(jobData ->
-                        jobTypeList.stream().anyMatch(jobType ->
+                        jobTypeList.stream().noneMatch(jobType ->
                                 Arrays.stream(jobData.getJobTypes()).anyMatch(jobTypeEnum ->
                                         jobTypeEnum.name().equalsIgnoreCase(jobType)
                                 )
@@ -102,7 +102,7 @@ public class JobScraper {
             // Filter jobs by blacklisted location
             String[] jobBlacklistedLocations = jobScraper.getDotEnv().get("BLACKLISTED_LOCATIONS").split(",");
             List<String> jobBlacklistedLocationList = Arrays.asList(jobBlacklistedLocations);
-            if (jobBlacklistedLocationList.stream().noneMatch("ANY"::equalsIgnoreCase)) {
+            if (jobBlacklistedLocationList.stream().noneMatch("NONE"::equalsIgnoreCase)) {
                 jobsData.removeIf(jobData ->
                         jobBlacklistedLocationList.stream().anyMatch(jobBlacklistedLocation ->
                                 jobData.getLocation().contains(jobBlacklistedLocation)
@@ -115,7 +115,7 @@ public class JobScraper {
             List<String> jobDistanceList = Arrays.asList(jobDistance);
             if (jobDistanceList.size() > 0) {
                 jobsData.removeIf(jobData ->
-                        jobDistanceList.stream().anyMatch(jobDistanceString ->
+                        jobDistanceList.stream().noneMatch(jobDistanceString ->
                                 jobData.getDistance() > Double.parseDouble(jobDistanceString)
                         )
                 );
