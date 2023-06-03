@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "me.joshuaportero.ajs"
-version = "0.1.0-ALPHA"
+version = "0.8.3-ALPHA"
 
 project.java.sourceCompatibility = JavaVersion.VERSION_17
 project.java.targetCompatibility = JavaVersion.VERSION_17
@@ -25,6 +25,8 @@ dependencies {
 
     implementation("io.github.cdimascio:dotenv-java:3.0.0")
     implementation("com.github.lalyos:jfiglet:0.0.8")
+
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
 }
 
 tasks {

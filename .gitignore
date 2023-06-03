@@ -3,7 +3,7 @@
 build/
 logs/
 !gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
+!**/src/jobScraper/**/build/
 !**/src/test/**/build/
 
 ### IntelliJ IDEA ###
@@ -12,7 +12,7 @@ logs/
 *.iml
 *.ipr
 out/
-!**/src/main/**/out/
+!**/src/jobScraper/**/out/
 !**/src/test/**/out/
 
 ### Eclipse ###
@@ -24,7 +24,7 @@ out/
 .springBeans
 .sts4-cache
 bin/
-!**/src/main/**/bin/
+!**/src/jobScraper/**/bin/
 !**/src/test/**/bin/
 
 ### NetBeans ###
