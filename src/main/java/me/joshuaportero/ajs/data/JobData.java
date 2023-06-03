@@ -8,7 +8,7 @@ import lombok.Data;
 public class JobData {
     private String title;
     private int shifts;
-    private JobType[] jobTypes;
+    private JobType[] jobType;
     private JobDuration[] jobDurations;
     private double pay;
     private String location;

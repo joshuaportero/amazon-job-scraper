@@ -49,7 +49,7 @@ public class JobDataAPI {
         return JobData.builder()
                 .title(title)
                 .shifts(shifts)
-                .jobTypes(jobType)
+                .jobType(jobType)
                 .jobDurations(jobDuration)
                 .pay(pay)
                 .location(location)

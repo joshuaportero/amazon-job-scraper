@@ -38,7 +38,7 @@ tasks {
     }
     shadowJar {
         manifest {
-            attributes["Main-Class"] = "me.joshuaportero.ajs.Main"
+            attributes["Main-Class"] = "me.joshuaportero.ajs.JobScraper"
         }
     }
 }

@@ -58,6 +58,7 @@ public class JobScraper {
             String[] jobTitles = jobScraper.getDotEnv().get("TITLE").split(",");
             List<String> jobTitleList = Arrays.asList(jobTitles);
             if (jobTitleList.stream().noneMatch("ANY"::equalsIgnoreCase)) {
+                log.info("Filtering jobs by title...");
                 jobsData.removeIf(jobData -> jobTitleList.stream().noneMatch(jobTitle -> jobData.getTitle().contains(jobTitle)));
             }
 
@@ -66,9 +67,10 @@ public class JobScraper {
             List<String> jobTypeList = Arrays.asList(jobTypes);
 
             if (jobTypeList.stream().noneMatch("ANY"::equalsIgnoreCase)) {
+                log.info("Filtering jobs by type...");
                 jobsData.removeIf(jobData ->
                         jobTypeList.stream().noneMatch(jobType ->
-                                Arrays.stream(jobData.getJobTypes()).anyMatch(jobTypeEnum ->
+                                Arrays.stream(jobData.getJobType()).anyMatch(jobTypeEnum ->
                                         jobTypeEnum.name().equalsIgnoreCase(jobType)
                                 )
                         )
@@ -78,9 +80,11 @@ public class JobScraper {
             // Filter jobs by duration
             String[] jobDurations = jobScraper.getDotEnv().get("DURATION").split(",");
             List<String> jobDurationList = Arrays.asList(jobDurations);
+
             if (jobDurationList.stream().noneMatch("ANY"::equalsIgnoreCase)) {
+                log.info("Filtering jobs by duration...");
                 jobsData.removeIf(jobData ->
-                        jobDurationList.stream().anyMatch(jobDuration ->
+                        jobDurationList.stream().noneMatch(jobDuration ->
                                 Arrays.stream(jobData.getJobDurations()).anyMatch(jobDurationEnum ->
                                         jobDurationEnum.name().equalsIgnoreCase(jobDuration)
                                 )
@@ -92,6 +96,7 @@ public class JobScraper {
             String[] jobPay = jobScraper.getDotEnv().get("PAY_RATE").split(",");
             List<String> jobPayList = Arrays.asList(jobPay);
             if (jobPayList.stream().noneMatch("ANY"::equalsIgnoreCase)) {
+                log.info("Filtering jobs by pay...");
                 jobsData.removeIf(jobData ->
                         jobPayList.stream().anyMatch(jobPayString ->
                                 jobData.getPay() < Double.parseDouble(jobPayString)
@@ -103,6 +108,7 @@ public class JobScraper {
             String[] jobBlacklistedLocations = jobScraper.getDotEnv().get("BLACKLISTED_LOCATIONS").split(",");
             List<String> jobBlacklistedLocationList = Arrays.asList(jobBlacklistedLocations);
             if (jobBlacklistedLocationList.stream().noneMatch("NONE"::equalsIgnoreCase)) {
+                log.info("Filtering jobs by blacklisted location...");
                 jobsData.removeIf(jobData ->
                         jobBlacklistedLocationList.stream().anyMatch(jobBlacklistedLocation ->
                                 jobData.getLocation().contains(jobBlacklistedLocation)
@@ -113,10 +119,11 @@ public class JobScraper {
             // Filter jobs by distance
             String[] jobDistance = jobScraper.getDotEnv().get("DISTANCE").split(",");
             List<String> jobDistanceList = Arrays.asList(jobDistance);
-            if (jobDistanceList.size() > 0) {
+            if (!jobDistanceList.get(0).isEmpty()) {
+                log.info("Filtering jobs by distance...");
                 jobsData.removeIf(jobData ->
                         jobDistanceList.stream().noneMatch(jobDistanceString ->
-                                jobData.getDistance() > Double.parseDouble(jobDistanceString)
+                                jobData.getDistance() < Double.parseDouble(jobDistanceString)
                         )
                 );
             }
@@ -147,7 +154,7 @@ public class JobScraper {
                                 + "\"thumbnail\": { \"url\": \"https://cdn.discordapp.com/attachments/817464794370146326/1114570634920464464/aa142d2c-681c-45a2-99e9-a6e63849b351.png\" },"
                                 + "\"fields\": ["
                                 + "{ \"name\": \"Shifts\", \"value\": \"" + jobData.getShifts() + " shift(s) available\", \"inline\": true },"
-                                + "{ \"name\": \"Type\", \"value\": \"" + Arrays.toString(jobData.getJobTypes()).replaceAll("\\[", "").replaceAll("]", "") + "\", \"inline\": true },"
+                                + "{ \"name\": \"Type\", \"value\": \"" + Arrays.toString(jobData.getJobType()).replaceAll("\\[", "").replaceAll("]", "") + "\", \"inline\": true },"
                                 + "{ \"name\": \"Duration\", \"value\": \"" + Arrays.toString(jobData.getJobDurations()).replaceAll("\\[", "").replaceAll("]", "") + "\", \"inline\": true },"
                                 + "{ \"name\": \"Pay\", \"value\": \"$" + jobData.getPay() + "\", \"inline\": true },"
                                 + "{ \"name\": \"Location\", \"value\": \"" + jobData.getLocation() + "\", \"inline\": true },"
@@ -213,6 +220,9 @@ public class JobScraper {
             log.info("Running in headless mode...");
             options.addArguments("--headless=new");
         }
+
+        options.addArguments("--disable-dev-shm-usage");
+        options.addArguments("--no-sandbox");
 
         return new ChromeDriver(options);
     }
