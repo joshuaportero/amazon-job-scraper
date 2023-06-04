@@ -4,7 +4,9 @@ import io.github.cdimascio.dotenv.Dotenv;
 import lombok.extern.slf4j.Slf4j;
 import me.joshuaportero.ajs.api.JobDataAPI;
 import me.joshuaportero.ajs.data.JobData;
+import me.joshuaportero.ajs.data.JobFilter;
 import me.joshuaportero.ajs.notifications.DiscordWebhook;
+import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -17,7 +19,9 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -40,7 +44,17 @@ public class JobScraper {
         // Schedule job search
         HashMap<JobData, Long> jobsNotified = new HashMap<>();
 
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+        ThreadFactory threadFactory = new ThreadFactory() {
+            private final AtomicInteger poolNumber = new AtomicInteger(1);
+            @Override
+            public Thread newThread(@NotNull Runnable r) {
+                Thread t = new Thread(r);
+                t.setName("scraper-" + poolNumber.getAndIncrement());
+                return t;
+            }
+        };
+
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1, threadFactory);
         Runnable checkJobCardsTask = () -> {
             // Search for jobs
             log.info("Searching for jobs...");
@@ -54,78 +68,17 @@ public class JobScraper {
 
             log.info("Found " + jobsData.size() + " jobs.");
 
-            // Filter jobs by title
-            String[] jobTitles = jobScraper.getDotEnv().get("TITLE").split(",");
-            List<String> jobTitleList = Arrays.asList(jobTitles);
-            if (jobTitleList.stream().noneMatch("ANY"::equalsIgnoreCase)) {
-                log.info("Filtering jobs by title...");
-                jobsData.removeIf(jobData -> jobTitleList.stream().noneMatch(jobTitle -> jobData.getTitle().contains(jobTitle)));
-            }
+            // Filter jobs
+            List<JobFilter> filters = new ArrayList<>();
+            filters.add(new JobFilter("TYPE", "ANY", (jobData, jobFieldValue) -> Arrays.stream(jobData.getJobType()).anyMatch(jobTypeEnum -> jobTypeEnum.name().equalsIgnoreCase(jobFieldValue))));
+            filters.add(new JobFilter("DURATION", "ANY", (jobData, jobFieldValue) -> Arrays.stream(jobData.getJobDurations()).anyMatch(jobDurationEnum -> jobDurationEnum.name().equalsIgnoreCase(jobFieldValue))));
+            filters.add(new JobFilter("PAY_RATE", "ANY", (jobData, jobFieldValue) -> jobData.getPay() < Double.parseDouble(jobFieldValue)));
+            filters.add(new JobFilter("BLACKLISTED_LOCATIONS", "NONE", (jobData, jobFieldValue) -> jobData.getLocation().contains(jobFieldValue)));
+            filters.add(new JobFilter("DISTANCE", "", (jobData, jobFieldValue) -> jobData.getDistance() < Double.parseDouble(jobFieldValue)));
 
-            // Filter jobs by type
-            String[] jobTypes = jobScraper.getDotEnv().get("TYPE").split(",");
-            List<String> jobTypeList = Arrays.asList(jobTypes);
-
-            if (jobTypeList.stream().noneMatch("ANY"::equalsIgnoreCase)) {
-                log.info("Filtering jobs by type...");
-                jobsData.removeIf(jobData ->
-                        jobTypeList.stream().noneMatch(jobType ->
-                                Arrays.stream(jobData.getJobType()).anyMatch(jobTypeEnum ->
-                                        jobTypeEnum.name().equalsIgnoreCase(jobType)
-                                )
-                        )
-                );
-            }
-
-            // Filter jobs by duration
-            String[] jobDurations = jobScraper.getDotEnv().get("DURATION").split(",");
-            List<String> jobDurationList = Arrays.asList(jobDurations);
-
-            if (jobDurationList.stream().noneMatch("ANY"::equalsIgnoreCase)) {
-                log.info("Filtering jobs by duration...");
-                jobsData.removeIf(jobData ->
-                        jobDurationList.stream().noneMatch(jobDuration ->
-                                Arrays.stream(jobData.getJobDurations()).anyMatch(jobDurationEnum ->
-                                        jobDurationEnum.name().equalsIgnoreCase(jobDuration)
-                                )
-                        )
-                );
-            }
-
-            // Filter jobs by pay
-            String[] jobPay = jobScraper.getDotEnv().get("PAY_RATE").split(",");
-            List<String> jobPayList = Arrays.asList(jobPay);
-            if (jobPayList.stream().noneMatch("ANY"::equalsIgnoreCase)) {
-                log.info("Filtering jobs by pay...");
-                jobsData.removeIf(jobData ->
-                        jobPayList.stream().anyMatch(jobPayString ->
-                                jobData.getPay() < Double.parseDouble(jobPayString)
-                        )
-                );
-            }
-
-            // Filter jobs by blacklisted location
-            String[] jobBlacklistedLocations = jobScraper.getDotEnv().get("BLACKLISTED_LOCATIONS").split(",");
-            List<String> jobBlacklistedLocationList = Arrays.asList(jobBlacklistedLocations);
-            if (jobBlacklistedLocationList.stream().noneMatch("NONE"::equalsIgnoreCase)) {
-                log.info("Filtering jobs by blacklisted location...");
-                jobsData.removeIf(jobData ->
-                        jobBlacklistedLocationList.stream().anyMatch(jobBlacklistedLocation ->
-                                jobData.getLocation().contains(jobBlacklistedLocation)
-                        )
-                );
-            }
-
-            // Filter jobs by distance
-            String[] jobDistance = jobScraper.getDotEnv().get("DISTANCE").split(",");
-            List<String> jobDistanceList = Arrays.asList(jobDistance);
-            if (!jobDistanceList.get(0).isEmpty()) {
-                log.info("Filtering jobs by distance...");
-                jobsData.removeIf(jobData ->
-                        jobDistanceList.stream().noneMatch(jobDistanceString ->
-                                jobData.getDistance() < Double.parseDouble(jobDistanceString)
-                        )
-                );
+            // Apply filters
+            for (JobFilter filter : filters) {
+                filter.apply(jobScraper.getDotEnv(), jobsData);
             }
 
             log.info("Found " + jobsData.size() + " jobs after filtering.");
@@ -164,17 +117,14 @@ public class JobScraper {
                     }
                 }
             }
-        };
 
+            //Reload page
+            driver.navigate().refresh();
+        };
 
         int period = Integer.parseInt(jobScraper.getDotEnv().get("RESET_TIME"));
         log.warn("The script will reset every " + period + " seconds. Until stopped.");
         executor.scheduleAtFixedRate(checkJobCardsTask, 0, period, TimeUnit.SECONDS);
-
-        // Close the driver
-//        log.info("Closing driver...");
-//        Thread.sleep(1000 * 5);
-//        driver.quit();
     }
 
     private List<WebElement> getJobCards(WebDriver driver) {
