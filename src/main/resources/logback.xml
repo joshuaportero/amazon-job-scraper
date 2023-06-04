@@ -8,6 +8,8 @@
               value="%-5level %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %logger{36} - %msg%n" />
     <property name="LOG_FILE" value="./logs/jobs.log" />
 
+    <logger name="org.asynchttpclient" level="WARN" />
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
@@ -29,7 +31,7 @@
         </triggeringPolicy>
     </appender>
 
-    <root level="INFO">
+    <root level="DEBUG">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </root>

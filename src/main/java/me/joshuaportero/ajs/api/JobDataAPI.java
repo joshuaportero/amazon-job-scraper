@@ -12,7 +12,6 @@ import java.util.List;
 @Slf4j
 public class JobDataAPI {
     public static JobData fromStringToJobData(String jobCard) {
-        log.debug("Parsing job data...");
         long startTime = System.currentTimeMillis();
 
         String title;
@@ -44,7 +43,6 @@ public class JobDataAPI {
             return null;
         }
         long endTime = System.currentTimeMillis();
-        log.debug("Parsed job data in " + (endTime - startTime) + "ms");
 
         return JobData.builder()
                 .title(title)

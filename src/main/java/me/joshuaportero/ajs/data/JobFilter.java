@@ -24,8 +24,9 @@ public class JobFilter {
         String[] jobFieldValues = dotenv.get(fieldName).split(",");
         List<String> jobFieldValueList = Arrays.asList(jobFieldValues);
         if (jobFieldValueList.stream().noneMatch(defaultValue::equalsIgnoreCase)) {
-            log.info("Filtering jobs by " + fieldName + "...");
+            log.debug("Filtering jobs by " + fieldName + "...");
             jobsData.removeIf(jobData -> jobFieldValueList.stream().noneMatch(jobFieldValue -> biPredicate.test(jobData, jobFieldValue)));
+            log.debug("There are " + jobsData.size() + " jobs remaining after filtering by " + fieldName + ".");
         }
     }
 

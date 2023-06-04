@@ -49,7 +49,7 @@ public class JobScraper {
             @Override
             public Thread newThread(@NotNull Runnable r) {
                 Thread t = new Thread(r);
-                t.setName("scraper-" + poolNumber.getAndIncrement());
+                t.setName("scrap-" + poolNumber.getAndIncrement());
                 return t;
             }
         };

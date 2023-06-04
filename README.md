@@ -7,6 +7,11 @@ automated, reliable way to find and notify me of Amazon job vacancies.
 This project was created for educational purposes and as a fun way to explore new technologies. It is not intended for
 misuse or to violate any terms of service. Use it responsibly.
 
+## Project Status
+There are currently no plans for further updates to this project. It has reached a point where there isn't much else to
+add, and I feel it has accomplished its purpose as a personal and educational project. I encourage you to fork and
+experiment with it, using it as a base for your own exploration and learning. Remember, use it responsibly.
+
 ## Features
 - Automatically scrapes Amazon's website for warehouse jobs.
 - Provides real-time, up-to-date job listings.
