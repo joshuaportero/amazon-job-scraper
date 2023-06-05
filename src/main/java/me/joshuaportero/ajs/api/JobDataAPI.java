@@ -29,6 +29,9 @@ public class JobDataAPI {
                 linesList.remove(0);
             }
             shifts = Integer.parseInt(linesList.get(1).split(" ")[0]);
+            if(linesList.get(2).contains(";")) {
+                linesList.set(2, linesList.get(2).replace(";", ",")); // Fix for job type parsing
+            }
             jobType = Arrays.stream(linesList.get(2).split(": ")[1].split(", "))
                     .map(type -> JobType.valueOf(type.replace(" ", "_").toUpperCase()))
                     .toArray(JobType[]::new);
