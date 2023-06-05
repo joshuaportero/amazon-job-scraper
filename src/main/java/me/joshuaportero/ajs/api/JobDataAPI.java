@@ -12,7 +12,6 @@ import java.util.List;
 @Slf4j
 public class JobDataAPI {
     public static JobData fromStringToJobData(String jobCard) {
-        long startTime = System.currentTimeMillis();
 
         String title;
         int shifts;
@@ -29,11 +28,18 @@ public class JobDataAPI {
                 linesList.remove(0);
             }
             shifts = Integer.parseInt(linesList.get(1).split(" ")[0]);
-            if(linesList.get(2).contains(";")) {
+            if (linesList.get(2).contains(";")) {
                 linesList.set(2, linesList.get(2).replace(";", ",")); // Fix for job type parsing
             }
             jobType = Arrays.stream(linesList.get(2).split(": ")[1].split(", "))
-                    .map(type -> JobType.valueOf(type.replace(" ", "_").toUpperCase()))
+                    .map(type -> {
+                        try {
+                            return JobType.valueOf(type.replace(" ", "_").toUpperCase());
+                        } catch (IllegalArgumentException e) {
+                            log.warn("Unknown job type encountered: {}. Mapping to UNKNOWN.", type);
+                            return JobType.UNKNOWN;
+                        }
+                    })
                     .toArray(JobType[]::new);
             jobDuration = Arrays.stream(linesList.get(3).split(": ")[1].split(", "))
                     .map(duration -> JobDuration.valueOf(duration.replace(" ", "_").toUpperCase()))
@@ -45,7 +51,6 @@ public class JobDataAPI {
             log.error("Error parsing job data: " + e.getMessage());
             return null;
         }
-        long endTime = System.currentTimeMillis();
 
         return JobData.builder()
                 .title(title)

@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import me.joshuaportero.ajs.api.JobDataAPI;
 import me.joshuaportero.ajs.data.JobData;
 import me.joshuaportero.ajs.data.JobFilter;
+import me.joshuaportero.ajs.data.JobType;
 import me.joshuaportero.ajs.notifications.DiscordWebhook;
 import org.jetbrains.annotations.NotNull;
 import org.openqa.selenium.By;
@@ -70,7 +71,8 @@ public class JobScraper {
 
             // Filter jobs
             List<JobFilter> filters = new ArrayList<>();
-            filters.add(new JobFilter("TYPE", "ANY", (jobData, jobFieldValue) -> Arrays.stream(jobData.getJobType()).anyMatch(jobTypeEnum -> jobTypeEnum.name().equalsIgnoreCase(jobFieldValue))));
+            filters.add(new JobFilter("TYPE", "ANY", (jobData, jobFieldValue) -> Arrays.stream(jobData.getJobType())
+                    .anyMatch(jobTypeEnum -> jobTypeEnum == JobType.UNKNOWN || jobTypeEnum.name().equalsIgnoreCase(jobFieldValue))));
             filters.add(new JobFilter("DURATION", "ANY", (jobData, jobFieldValue) -> Arrays.stream(jobData.getJobDurations()).anyMatch(jobDurationEnum -> jobDurationEnum.name().equalsIgnoreCase(jobFieldValue))));
             filters.add(new JobFilter("PAY_RATE", "ANY", (jobData, jobFieldValue) -> jobData.getPay() < Double.parseDouble(jobFieldValue)));
             filters.add(new JobFilter("BLACKLISTED_LOCATIONS", "NONE", (jobData, jobFieldValue) -> jobData.getLocation().contains(jobFieldValue)));

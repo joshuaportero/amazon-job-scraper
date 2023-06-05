@@ -4,5 +4,6 @@ public enum JobType {
     PART_TIME,
     FULL_TIME,
     FLEX_TIME,
-    REDUCED_TIME
+    REDUCED_TIME,
+    UNKNOWN
 }
