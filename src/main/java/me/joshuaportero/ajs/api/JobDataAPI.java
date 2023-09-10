@@ -23,15 +23,22 @@ public class JobDataAPI {
 
         try {
             List<String> linesList = new ArrayList<>(Arrays.asList(jobCard.split("\n")));
+            log.debug("Job card lines: " + linesList);
             title = linesList.get(0);
             if (title.startsWith("P") || title.startsWith("B") || title.startsWith("Featured")) {
                 linesList.remove(0);
             }
-            shifts = Integer.parseInt(linesList.get(1).split(" ")[0]);
-            if (linesList.get(2).contains(";")) {
-                linesList.set(2, linesList.get(2).replace(";", ",")); // Fix for job type parsing
+            int line = 1;
+            try {
+                shifts = Integer.parseInt(linesList.get(line).split(" ")[0]);
+                line += 1;
+            } catch (NumberFormatException e) {
+                shifts = -1;
             }
-            jobType = Arrays.stream(linesList.get(2).split(": ")[1].split(", "))
+            if (linesList.get(line).contains(";")) {
+                linesList.set(line, linesList.get(line).replace(";", ",")); // Fix for job type parsing
+            }
+            jobType = Arrays.stream(linesList.get(line).split(": ")[1].split(", "))
                     .map(type -> {
                         try {
                             return JobType.valueOf(type.replace(" ", "_").toUpperCase());
@@ -41,12 +48,25 @@ public class JobDataAPI {
                         }
                     })
                     .toArray(JobType[]::new);
-            jobDuration = Arrays.stream(linesList.get(3).split(": ")[1].split(", "))
+            line += 1;
+            jobDuration = Arrays.stream(linesList.get(line).split(": ")[1].split(", "))
                     .map(duration -> JobDuration.valueOf(duration.replace(" ", "_").toUpperCase()))
                     .toArray(JobDuration[]::new);
-            pay = Double.parseDouble(linesList.get(4).split("\\$")[1]);
-            location = linesList.get(5).split("\\| ")[1];
-            distance = Double.parseDouble(linesList.get(5).split(" ")[1]);
+            line += 1;
+            pay = Double.parseDouble(linesList.get(line).split("\\$")[1]);
+            line += 1;
+            location = linesList.get(line).split("\\| ")[1];
+
+            // Distance can contain "Within %num% mi" or "%num% miles"
+            try {
+                distance = Double.parseDouble(linesList.get(line).split(" ")[1]);
+            } catch (NumberFormatException e) {
+                try {
+                    distance = Double.parseDouble(linesList.get(line).split(" ")[0]);
+                } catch (NumberFormatException e2) {
+                    distance = -1;
+                }
+            }
         } catch (Exception e) {
             log.error("Error parsing job data: " + e.getMessage());
             return null;

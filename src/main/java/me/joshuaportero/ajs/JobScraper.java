@@ -17,7 +17,10 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -47,6 +50,7 @@ public class JobScraper {
 
         ThreadFactory threadFactory = new ThreadFactory() {
             private final AtomicInteger poolNumber = new AtomicInteger(1);
+
             @Override
             public Thread newThread(@NotNull Runnable r) {
                 Thread t = new Thread(r);
@@ -127,6 +131,17 @@ public class JobScraper {
         int period = Integer.parseInt(jobScraper.getDotEnv().get("RESET_TIME"));
         log.warn("The script will reset every " + period + " seconds. Until stopped.");
         executor.scheduleAtFixedRate(checkJobCardsTask, 0, period, TimeUnit.SECONDS);
+    }
+
+    private void removeNullsFromList(List<JobData> jobsData) {
+        for (JobData jobData : jobsData) {
+            // check if any value is null
+            if (jobData == null || (jobData.getTitle() == null || jobData.getJobType() == null || jobData.getJobDurations() == null || jobData.getLocation() == null)) {
+                jobsData.remove(jobData);
+                log.debug("Removed null from list.");
+            }
+        }
+
     }
 
     private List<WebElement> getJobCards(WebDriver driver) {
