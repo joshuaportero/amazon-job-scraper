@@ -75,7 +75,7 @@ public class JobScraper {
                     .anyMatch(jobTypeEnum -> jobTypeEnum == JobType.UNKNOWN || jobTypeEnum.name().equalsIgnoreCase(jobFieldValue))));
             filters.add(new JobFilter("DURATION", "ANY", (jobData, jobFieldValue) -> Arrays.stream(jobData.getJobDurations()).anyMatch(jobDurationEnum -> jobDurationEnum.name().equalsIgnoreCase(jobFieldValue))));
             filters.add(new JobFilter("PAY_RATE", "ANY", (jobData, jobFieldValue) -> jobData.getPay() < Double.parseDouble(jobFieldValue)));
-            filters.add(new JobFilter("BLACKLISTED_LOCATIONS", "NONE", (jobData, jobFieldValue) -> jobData.getLocation().contains(jobFieldValue)));
+            filters.add(new JobFilter("BLACKLISTED_LOCATIONS", "NONE", (jobData, jobFieldValue) -> !jobData.getLocation().contains(jobFieldValue)));
             filters.add(new JobFilter("DISTANCE", "", (jobData, jobFieldValue) -> jobData.getDistance() < Double.parseDouble(jobFieldValue)));
 
             // Apply filters
@@ -92,7 +92,7 @@ public class JobScraper {
             }
 
             // Send notification to Discord
-            if (jobsData.size() > 0) {
+            if (!jobsData.isEmpty()) {
                 List<String> userIds = Arrays.asList(jobScraper.getDotEnv().get("DISCORD_USER_IDS").split(","));
                 for (JobData jobData : jobsData) {
                     if (!jobsNotified.containsKey(jobData)) {
